@@ -49,12 +49,20 @@ Antwoord UITSLUITEND als geldig JSON in dit formaat, zonder uitleg:
   ]
 }
 
-Artikelen (${items.length} stuks):
-${items
-  .slice(0, 60)
-  .map((item, i) => `[${i}] ${item.source}: ${item.title}\n${item.summary.slice(0, 250)}`)
+Artikelen (${capped.length} stuks):
+${capped
+  .map((item, i) => `[${i}] ${item.source}: ${item.title}\n${item.summary.slice(0, 200)}`)
   .join("\n\n")}
 `;
+
+  // Max 5 artikelen per bron → altijd alle kranten vertegenwoordigd, input klein
+  const capped = Object.values(
+    items.reduce<Record<string, RssItem[]>>((acc, item) => {
+      acc[item.source] = acc[item.source] ?? [];
+      if (acc[item.source].length < 5) acc[item.source].push(item);
+      return acc;
+    }, {})
+  ).flat();
 
   const res = await client.messages.create({
     model: "claude-haiku-4-5",
@@ -84,7 +92,7 @@ ${items
       })
       .slice(0, 3)
       .map((a, i) => {
-        const original = items[a.index];
+        const original = capped[a.index];
         return {
           position: i + 1,
           source: a.source,
