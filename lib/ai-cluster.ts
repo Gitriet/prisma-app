@@ -17,20 +17,16 @@ export type GeneratedTopic = {
 };
 
 export async function clusterAndGenerate(items: RssItem[]): Promise<GeneratedTopic[]> {
-  // Eén enkele Claude-aanroep: cluster + herschrijf tegelijk
+  // Eén enkele Claude-aanroep: cluster + selecteer + framing
   const prompt = `
 Je bent redacteur van Prisma, een Nederlandse mediageletterdheids-app.
 
 Je krijgt nieuwsartikelen van 7 kranten: Volkskrant, Telegraaf, NOS, FD, NRC, AD en NYT.
 
-Doe dit in één stap:
+Doe dit:
 1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij minstens 3 kranten iets schreven.
 2. Kies per onderwerp de 5 meest representatieve artikelen (maximaal 1 per krant).
-3. Herschrijf elk artikel als een BLINDE tekst van 120-150 woorden in neutraal Nederlands:
-   - Zelfde feiten, volledig andere formulering
-   - Geen herkenbare schrijfstijl, geen krantnaam, geen "wij"
-   - Alle 5 teksten even lang en in hetzelfde register
-4. Schrijf per tekst een framing-notitie (1 zin) die de redactionele invalshoek benoemt.
+3. Schrijf per artikel een framing-notitie (1 zin) die de redactionele invalshoek benoemt — zichtbaar na de reveal.
 
 Antwoord UITSLUITEND als geldig JSON in dit formaat, zonder uitleg:
 {
@@ -40,8 +36,8 @@ Antwoord UITSLUITEND als geldig JSON in dit formaat, zonder uitleg:
       "description": "1-2 zinnen context voor de lezer",
       "articles": [
         {
+          "index": 0,
           "source": "Krantnaam",
-          "blindText": "Herschreven neutrale tekst van 120-150 woorden...",
           "framing": "Eén zin die de invalshoek benoemt."
         }
       ]
@@ -70,18 +66,23 @@ ${items
     topics: {
       title: string;
       description: string;
-      articles: { source: string; blindText: string; framing: string }[];
+      articles: { index: number; source: string; framing: string }[];
     }[];
   };
 
   return parsed.topics.slice(0, 3).map((topic) => ({
     title: topic.title,
     description: topic.description,
-    articles: topic.articles.slice(0, 5).map((a, i) => ({
-      position: i + 1,
-      source: a.source,
-      blindText: a.blindText,
-      framing: a.framing,
-    })),
+    articles: topic.articles.slice(0, 5).map((a, i) => {
+      const original = items[a.index];
+      return {
+        position: i + 1,
+        source: a.source,
+        blindText: original
+          ? `${original.title}\n\n${original.summary}`
+          : "",
+        framing: a.framing,
+      };
+    }),
   }));
 }
