@@ -104,3 +104,14 @@ model Vote {
 
   @@unique([userId, topicId]) // one vote per user per topic
 }
+
+// ── RSS cache ────────────────────────────────────────────────
+model RssCache {
+  id        String   @id @default(cuid())
+  source    String
+  title     String
+  summary   String   @db.Text
+  link      String   @unique // dedupliceert op URL
+  pubDate   String
+  fetchedAt DateTime @default(now())
+}

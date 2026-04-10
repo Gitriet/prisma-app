@@ -95,7 +95,8 @@ export default function AdminClient() {
         return;
       }
       items = rssData.items;
-      setStatusMsg(`${items.length} artikelen geladen. AI clustert…`);
+      const src = (rssData as { fromCache?: boolean }).fromCache ? "uit cache" : "live opgehaald";
+      setStatusMsg(`${items.length} artikelen geladen (${src}). AI clustert…`);
     } catch {
       setGenerateError("RSS ophalen mislukt.");
       setGenerating(false);
