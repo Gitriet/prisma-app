@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     articles: { position: number; text: string; source: string; framing: string }[];
   };
 
-  if (!date || !title || !articles || articles.length < 3 || articles.length > 5) {
+  if (!date || !title || !articles || articles.length < 2 || articles.length > 5) {
     return NextResponse.json({ error: "Vereiste velden ontbreken." }, { status: 400 });
   }
 
