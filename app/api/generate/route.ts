@@ -1,30 +1,55 @@
-import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { fetchAllFeeds } from "@/lib/rss";
 import { clusterAndGenerate } from "@/lib/ai-cluster";
 
-export const maxDuration = 60; // Vercel max voor hobby plan
+export const maxDuration = 60;
 
 export async function POST() {
   const session = await auth();
   const user = session?.user as { isAdmin?: boolean } | undefined;
   if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
-  try {
-    const items = await fetchAllFeeds();
-    if (items.length === 0) {
-      return NextResponse.json({ error: "Geen RSS-items opgehaald." }, { status: 502 });
-    }
+  // Stream voortgang via SSE
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      function send(event: string, data: unknown) {
+        controller.enqueue(
+          encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+        );
+      }
 
-    const topics = await clusterAndGenerate(items);
-    return NextResponse.json({ topics });
-  } catch (err) {
-    console.error("Generate error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Onbekende fout" },
-      { status: 500 }
-    );
-  }
+      try {
+        send("status", { message: "RSS-feeds ophalen…" });
+        const items = await fetchAllFeeds();
+
+        if (items.length === 0) {
+          send("error", { message: "Geen RSS-items opgehaald." });
+          controller.close();
+          return;
+        }
+
+        send("status", { message: `${items.length} artikelen geladen. AI clustert…` });
+        const topics = await clusterAndGenerate(items);
+
+        send("done", { topics });
+      } catch (err) {
+        send("error", {
+          message: err instanceof Error ? err.message : "Onbekende fout",
+        });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
 }

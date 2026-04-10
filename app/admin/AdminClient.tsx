@@ -74,22 +74,60 @@ export default function AdminClient() {
     setLoadingTopics(false);
   }
 
-  // ── Generate ────────────────────────────────────────────────
+  const [statusMsg, setStatusMsg] = useState("");
+
+  // ── Generate via SSE ────────────────────────────────────────
   async function handleGenerate() {
     setGenerating(true);
     setGenerateError("");
     setGenerated(null);
     setSelectedIdx(null);
+    setStatusMsg("Verbinden…");
 
     const res = await fetch("/api/generate", { method: "POST" });
-    const data = await res.json() as { topics?: GeneratedTopic[]; error?: string };
-    setGenerating(false);
 
-    if (!res.ok || !data.topics) {
+    if (!res.ok || !res.body) {
+      const data = await res.json() as { error?: string };
       setGenerateError(data.error ?? "Genereren mislukt.");
+      setGenerating(false);
       return;
     }
-    setGenerated(data.topics);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      let event = "";
+      for (const line of lines) {
+        if (line.startsWith("event: ")) {
+          event = line.slice(7).trim();
+        } else if (line.startsWith("data: ")) {
+          try {
+            const payload = JSON.parse(line.slice(6)) as Record<string, unknown>;
+            if (event === "status") setStatusMsg(payload.message as string);
+            if (event === "error") {
+              setGenerateError(payload.message as string);
+              setGenerating(false);
+            }
+            if (event === "done") {
+              setGenerated(payload.topics as GeneratedTopic[]);
+              setGenerating(false);
+              setStatusMsg("");
+            }
+          } catch {}
+          event = "";
+        }
+      }
+    }
+    setGenerating(false);
   }
 
   function selectSuggestion(idx: number) {
@@ -189,8 +227,13 @@ export default function AdminClient() {
         </div>
         <p className="text-xs text-muted">
           Haalt RSS-feeds op van 7 kranten en laat AI de sterkste onderwerpen clusteren.
-          {generating && " Dit duurt ~30 seconden."}
         </p>
+        {statusMsg && (
+          <p className="mt-2 text-xs text-muted flex items-center gap-2">
+            <span className="inline-block w-2.5 h-2.5 border-2 border-muted/40 border-t-muted rounded-full animate-spin" />
+            {statusMsg}
+          </p>
+        )}
         {generateError && <p className="mt-3 text-xs text-c1">{generateError}</p>}
 
         {/* Suggesties */}
