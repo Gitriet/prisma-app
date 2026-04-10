@@ -17,16 +17,24 @@ export type GeneratedTopic = {
 };
 
 export async function clusterAndGenerate(items: RssItem[]): Promise<GeneratedTopic[]> {
-  // Eén enkele Claude-aanroep: cluster + selecteer + framing
+  // Max 5 artikelen per bron → alle kranten vertegenwoordigd, input klein (~35 totaal)
+  const capped = Object.values(
+    items.reduce<Record<string, RssItem[]>>((acc, item) => {
+      acc[item.source] = acc[item.source] ?? [];
+      if (acc[item.source].length < 5) acc[item.source].push(item);
+      return acc;
+    }, {})
+  ).flat();
+
   const prompt = `
 Je bent redacteur van Prisma, een Nederlandse mediageletterdheids-app.
 
 Je krijgt nieuwsartikelen van 7 kranten: Volkskrant, Telegraaf, NOS, FD, NRC, AD en NYT.
 
 Doe dit:
-1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij EXACT hetzelfde nieuws-event door minstens 3 VERSCHILLENDE kranten is behandeld. Als er te weinig recente events zijn waarbij 3 kranten hetzelfde schreven, mag je ook iets oudere events gebruiken uit de feed.
+1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij EXACT hetzelfde nieuws-event door minstens 3 VERSCHILLENDE kranten is behandeld. Als er te weinig recente events zijn, mag je ook oudere events uit de feed gebruiken.
 2. Kies per onderwerp precies 3 artikelen die ALLEMAAL over hetzelfde specifieke event gaan — STRIKT 1 artikel per krant, nooit twee keer dezelfde bron.
-3. Controleer: staan alle 3 artikelen in de "articles" lijst van VERSCHILLENDE kranten? Zo niet, vervang duplicaten.
+3. Controleer: staan alle 3 artikelen van VERSCHILLENDE kranten? Zo niet, vervang duplicaten.
 4. Kies de 3 bronnen die het meest uiteenlopen in toon, invalshoek of politieke kleur.
 5. Schrijf per artikel een framing-notitie (1 zin) die de redactionele invalshoek benoemt — zichtbaar na de reveal.
 
@@ -55,15 +63,6 @@ ${capped
   .join("\n\n")}
 `;
 
-  // Max 5 artikelen per bron → altijd alle kranten vertegenwoordigd, input klein
-  const capped = Object.values(
-    items.reduce<Record<string, RssItem[]>>((acc, item) => {
-      acc[item.source] = acc[item.source] ?? [];
-      if (acc[item.source].length < 5) acc[item.source].push(item);
-      return acc;
-    }, {})
-  ).flat();
-
   const res = await client.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 4000,
@@ -86,19 +85,14 @@ ${capped
     title: topic.title,
     description: topic.description,
     articles: topic.articles
-      .filter((a, i, arr) => {
-        // Verwijder duplicaat-bronnen (keep first occurrence)
-        return arr.findIndex((b) => b.source === a.source) === i;
-      })
+      .filter((a, i, arr) => arr.findIndex((b) => b.source === a.source) === i)
       .slice(0, 3)
       .map((a, i) => {
         const original = capped[a.index];
         return {
           position: i + 1,
           source: a.source,
-          blindText: original
-            ? `${original.title}\n\n${original.summary}`
-            : "",
+          blindText: original ? `${original.title}\n\n${original.summary}` : "",
           framing: a.framing,
         };
       }),
