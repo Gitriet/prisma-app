@@ -19,7 +19,7 @@ const FEEDS: { source: string; url: string }[] = [
 ];
 
 const parser = new Parser({
-  timeout: 10000,
+  timeout: 5000,
   headers: { "User-Agent": "Prisma/1.0 RSS Reader" },
 });
 

@@ -51,14 +51,14 @@ Antwoord UITSLUITEND als geldig JSON in dit formaat, zonder uitleg:
 
 Artikelen (${items.length} stuks):
 ${items
-  .slice(0, 60)
+  .slice(0, 35)
   .map((item, i) => `[${i}] ${item.source}: ${item.title}\n${item.summary.slice(0, 250)}`)
   .join("\n\n")}
 `;
 
   const res = await client.messages.create({
-    model: "claude-sonnet-4-5",
-    max_tokens: 6000,
+    model: "claude-haiku-4-5",
+    max_tokens: 4000,
     messages: [{ role: "user", content: prompt }],
   });
 

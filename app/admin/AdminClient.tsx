@@ -76,24 +76,47 @@ export default function AdminClient() {
 
   const [statusMsg, setStatusMsg] = useState("");
 
-  // ── Generate via SSE ────────────────────────────────────────
+  // ── Generate: stap 1 RSS, stap 2 Claude SSE ─────────────────
   async function handleGenerate() {
     setGenerating(true);
     setGenerateError("");
     setGenerated(null);
     setSelectedIdx(null);
-    setStatusMsg("Verbinden…");
+    setStatusMsg("RSS-feeds ophalen…");
 
-    const res = await fetch("/api/generate", { method: "POST" });
+    // Stap 1: RSS
+    let items: unknown[];
+    try {
+      const rssRes = await fetch("/api/generate/rss", { method: "POST" });
+      const rssData = await rssRes.json() as { items?: unknown[]; error?: string };
+      if (!rssRes.ok || !rssData.items) {
+        setGenerateError(rssData.error ?? "RSS ophalen mislukt.");
+        setGenerating(false);
+        return;
+      }
+      items = rssData.items;
+      setStatusMsg(`${items.length} artikelen geladen. AI clustert…`);
+    } catch {
+      setGenerateError("RSS ophalen mislukt.");
+      setGenerating(false);
+      return;
+    }
 
-    if (!res.ok || !res.body) {
-      const data = await res.json() as { error?: string };
+    // Stap 2: Claude via SSE
+    const clusterRes = await fetch("/api/generate/cluster", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+
+    if (!clusterRes.ok || !clusterRes.body) {
+      const data = await clusterRes.json() as { error?: string };
       setGenerateError(data.error ?? "Genereren mislukt.");
       setGenerating(false);
       return;
     }
 
-    const reader = res.body.getReader();
+    const reader = clusterRes.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
 
@@ -101,10 +124,8 @@ export default function AdminClient() {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-
       const lines = buffer.split("\n");
       buffer = lines.pop() ?? "";
-
       let event = "";
       for (const line of lines) {
         if (line.startsWith("event: ")) {
@@ -113,16 +134,9 @@ export default function AdminClient() {
           try {
             const payload = JSON.parse(line.slice(6)) as Record<string, unknown>;
             if (event === "status") setStatusMsg(payload.message as string);
-            if (event === "error") {
-              setGenerateError(payload.message as string);
-              setGenerating(false);
-            }
-            if (event === "done") {
-              setGenerated(payload.topics as GeneratedTopic[]);
-              setGenerating(false);
-              setStatusMsg("");
-            }
-          } catch {}
+            if (event === "error") { setGenerateError(payload.message as string); setGenerating(false); }
+            if (event === "done") { setGenerated(payload.topics as GeneratedTopic[]); setGenerating(false); setStatusMsg(""); }
+          } catch { /* ignore parse errors */ }
           event = "";
         }
       }
