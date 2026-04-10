@@ -20,7 +20,7 @@ type TopicWithArticles = {
 };
 
 // ── Helpers ──────────────────────────────────────────────────
-const emptyArticles = (n = 5): ArticleForm[] =>
+const emptyArticles = (n = 3): ArticleForm[] =>
   Array.from({ length: n }, (_, i) => ({
     position: i + 1,
     text: "",

@@ -25,7 +25,7 @@ Je krijgt nieuwsartikelen van 7 kranten: Volkskrant, Telegraaf, NOS, FD, NRC, AD
 
 Doe dit:
 1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij minstens 3 kranten iets schreven.
-2. Kies per onderwerp de 3 meest representatieve artikelen (maximaal 1 per krant).
+2. Kies per onderwerp de 3 meest uiteenlopende artikelen (maximaal 1 per krant) — kies bronnen die het meest van elkaar verschillen in toon, invalshoek of politieke kleur.
 3. Schrijf per artikel een framing-notitie (1 zin) die de redactionele invalshoek benoemt — zichtbaar na de reveal.
 
 Antwoord UITSLUITEND als geldig JSON in dit formaat, zonder uitleg:
