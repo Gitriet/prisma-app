@@ -24,9 +24,13 @@ Je bent redacteur van Prisma, een Nederlandse mediageletterdheids-app.
 Je krijgt nieuwsartikelen van 7 kranten: Volkskrant, Telegraaf, NOS, FD, NRC, AD en NYT.
 
 Doe dit:
-1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij minstens 3 kranten iets schreven.
-2. Kies per onderwerp de 3 meest uiteenlopende artikelen (maximaal 1 per krant) — kies bronnen die het meest van elkaar verschillen in toon, invalshoek of politieke kleur.
-3. Schrijf per artikel een framing-notitie (1 zin) die de redactionele invalshoek benoemt — zichtbaar na de reveal.
+1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij EXACT hetzelfde nieuws-event door minstens 3 VERSCHILLENDE kranten is behandeld.
+2. Kies per onderwerp precies 3 artikelen die ALLEMAAL over hetzelfde specifieke event gaan — STRIKT 1 artikel per krant, nooit twee keer dezelfde bron.
+3. Controleer: staan alle 3 artikelen in de "articles" lijst van VERSCHILLENDE kranten? Zo niet, vervang duplicaten.
+4. Kies de 3 bronnen die het meest uiteenlopen in toon, invalshoek of politieke kleur.
+5. Schrijf per artikel een framing-notitie (1 zin) die de redactionele invalshoek benoemt — zichtbaar na de reveal.
+
+BELANGRIJK: elk "source" in de articles-lijst van één topic moet UNIEK zijn. Nooit twee keer "NOS" of twee keer "Telegraaf" in hetzelfde topic.
 
 Antwoord UITSLUITEND als geldig JSON in dit formaat, zonder uitleg:
 {
@@ -73,16 +77,22 @@ ${items
   return parsed.topics.slice(0, 3).map((topic) => ({
     title: topic.title,
     description: topic.description,
-    articles: topic.articles.slice(0, 3).map((a, i) => {
-      const original = items[a.index];
-      return {
-        position: i + 1,
-        source: a.source,
-        blindText: original
-          ? `${original.title}\n\n${original.summary}`
-          : "",
-        framing: a.framing,
-      };
-    }),
+    articles: topic.articles
+      .filter((a, i, arr) => {
+        // Verwijder duplicaat-bronnen (keep first occurrence)
+        return arr.findIndex((b) => b.source === a.source) === i;
+      })
+      .slice(0, 3)
+      .map((a, i) => {
+        const original = items[a.index];
+        return {
+          position: i + 1,
+          source: a.source,
+          blindText: original
+            ? `${original.title}\n\n${original.summary}`
+            : "",
+          framing: a.framing,
+        };
+      }),
   }));
 }
