@@ -27,11 +27,13 @@ type TodayData = {
   revealArticles: RevealArticle[];
 };
 
-// Colour palette for the reveal: position → colour token
+// Colour palette for the reveal: position → colour token (supports 3-5 articles)
 const REVEAL_COLORS = [
   { bg: "bg-c1-bg", border: "border-c1/20", label: "text-c1", dot: "#d04a2f" },
   { bg: "bg-c2-bg", border: "border-c2/20", label: "text-c2", dot: "#2255b8" },
   { bg: "bg-c3-bg", border: "border-c3/20", label: "text-c3", dot: "#1a7c4f" },
+  { bg: "bg-ink/5", border: "border-ink/15", label: "text-ink", dot: "#0c0c0b" },
+  { bg: "bg-ink/[0.03]", border: "border-ink/10", label: "text-muted", dot: "#6b6b67" },
 ];
 
 export default function TodayClient({ userId }: { userId: string }) {
