@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prisma — Hetzelfde nieuws. Drie compleet andere verhalen.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0c0c0b;
+    --white: #f9f6f0;
+    --muted: #6b6b67;
+    --border: rgba(12,12,11,0.12);
+    --c1: #d04a2f;
+    --c2: #2255b8;
+    --c3: #1a7c4f;
+    --c1-bg: #fdf0ed;
+    --c2-bg: #edf2fc;
+    --c3-bg: #edf7f2;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 2rem;
+    background: rgba(249,246,240,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.01em;
+    color: var(--black);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .prism-icon {
+    width: 20px; height: 20px;
+    display: inline-block;
+  }
+
+  .nav-cta {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--black);
+    text-decoration: none;
+    border: 1px solid var(--black);
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-cta:hover { background: var(--black); color: var(--white); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--white);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(208,74,47,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -80px;
+    width: 440px; height: 440px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34,85,184,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-accent {
+    position: absolute;
+    bottom: 8%; right: 6%;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,124,79,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 800px;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 .line1 {
+    display: block;
+    color: var(--black);
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    background: linear-gradient(90deg, var(--c1) 0%, var(--c2) 50%, var(--c3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 440px;
+    margin-bottom: 3rem;
+    line-height: 1.7;
+  }
+
+  /* FORM */
+  .form-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .form-row input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(12,12,11,0.25);
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    background: var(--white);
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-row input:focus { border-color: var(--black); }
+  .form-row input::placeholder { color: var(--muted); }
+
+  .btn-primary {
+    padding: 0.75rem 1.4rem;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.8; }
+
+  .form-note {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 0.75rem;
+  }
+
+  .success-msg {
+    display: none;
+    font-size: 0.95rem;
+    color: var(--c3);
+    font-weight: 500;
+    margin-top: 1rem;
+  }
+
+  /* DIVIDER */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0 2rem;
+  }
+
+  /* DEMO */
+  .demo {
+    padding: 6rem 2rem;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .demo-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    max-width: 560px;
+    line-height: 1.3;
+  }
+
+  .demo-topic {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(12,12,11,0.06);
+    border-radius: 100px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+  }
+
+  .demo-topic span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--black);
+    opacity: 0.4;
+  }
+
+  .perspectives {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .perspective-card {
+    border-radius: 16px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .perspective-card.red { background: var(--c1-bg); }
+  .perspective-card.blue { background: var(--c2-bg); }
+  .perspective-card.green { background: var(--c3-bg); }
+
+  .source-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 100px;
+    margin-bottom: 0.75rem;
+  }
+
+  .red .source-tag { background: rgba(208,74,47,0.12); color: var(--c1); }
+  .blue .source-tag { background: rgba(34,85,184,0.12); color: var(--c2); }
+  .green .source-tag { background: rgba(26,124,79,0.12); color: var(--c3); }
+
+  .card-head {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 0.6rem;
+    color: var(--black);
+  }
+
+  .card-body {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  /* HOW */
+  .how {
+    padding: 6rem 2rem;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: rgba(12,12,11,0.1);
+    margin-bottom: 0.5rem;
+    line-height: 1;
+  }
+
+  .step-title {
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+  }
+
+  .step-body {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* CTA BOTTOM */
+  .cta-bottom {
+    padding: 6rem 2rem;
+    text-align: center;
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .cta-bottom h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .cta-bottom p {
+    color: rgba(249,246,240,0.55);
+    margin-bottom: 2.5rem;
+    font-size: 0.95rem;
+  }
+
+  .cta-bottom .form-row { margin: 0 auto; }
+
+  .cta-bottom .form-row input {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    color: var(--white);
+  }
+  .cta-bottom .form-row input::placeholder { color: rgba(249,246,240,0.4); }
+  .cta-bottom .form-row input:focus { border-color: rgba(255,255,255,0.6); }
+
+  .cta-bottom .btn-primary {
+    background: var(--white);
+    color: var(--black);
+  }
+
+  .cta-bottom .form-note { color: rgba(249,246,240,0.35); }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .perspectives { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; gap: 1.5rem; }
+    .form-row { flex-direction: column; }
+    .form-row input, .btn-primary { width: 100%; }
+    nav { padding: 1rem 1.25rem; }
+  }
+
+  /* PRISM VISUAL */
+  .prism-visual {
+    margin: 3rem auto 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* FADE IN */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-content > * {
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-content > *:nth-child(1) { animation-delay: 0.05s; }
+  .hero-content > *:nth-child(2) { animation-delay: 0.12s; }
+  .hero-content > *:nth-child(3) { animation-delay: 0.2s; }
+  .hero-content > *:nth-child(4) { animation-delay: 0.28s; }
+  .hero-content > *:nth-child(5) { animation-delay: 0.35s; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">
+    <svg class="prism-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="10,2 18,17 2,17" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+      <line x1="10" y1="17" x2="14" y2="17" stroke="#d04a2f" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="17" x2="17" y2="17" stroke="#2255b8" stroke-width="2" stroke-linecap="round"/>
+      <line x1="17" y1="17" x2="18" y2="17" stroke="#1a7c4f" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    Prisma
+  </a>
+  <a href="/login" class="nav-cta">Aanmelden</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-accent"></div>
+  <div class="hero-content" style="display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;">
+    <p class="eyebrow">Nieuw · Binnenkort beschikbaar</p>
+    <h1><span class="line1">Hetzelfde nieuws.</span><em>Drie compleet andere verhalen.</em></h1>
+    <p class="hero-sub">Prisma toont je hoe verschillende media hetzelfde onderwerp framen. Niet meer nieuws — dieper nieuws.</p>
+
+    <div style="display:flex;gap:8px;margin-bottom:2rem;flex-wrap:wrap;justify-content:center;">
+      <span style="background:var(--c1-bg);color:var(--c1);border:1px solid rgba(208,74,47,0.2);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:500;">De Telegraaf</span>
+      <span style="background:var(--c2-bg);color:var(--c2);border:1px solid rgba(34,85,184,0.2);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:500;">De Volkskrant</span>
+      <span style="background:var(--c3-bg);color:var(--c3);border:1px solid rgba(26,124,79,0.2);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:500;">NRC</span>
+      <span style="background:rgba(12,12,11,0.05);color:var(--muted);border:1px solid var(--border);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:500;">Reuters</span>
+      <span style="background:rgba(12,12,11,0.05);color:var(--muted);border:1px solid var(--border);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;font-weight:500;">+ meer</span>
+    </div>
+
+    <div id="hero-form-wrap">
+      <a href="/login" class="btn-primary" style="display:inline-block;text-decoration:none;">Begin met lezen →</a>
+    </div>
+
+    <div class="prism-visual">
+      <svg width="140" height="90" viewBox="0 0 140 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.18;">
+        <polygon points="70,4 128,86 12,86" stroke="#0c0c0b" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+        <line x1="70" y1="44" x2="12" y2="86" stroke="#0c0c0b" stroke-width="0.5" stroke-dasharray="3 3"/>
+        <line x1="90" y1="86" x2="118" y2="86" stroke="#d04a2f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="118" y1="86" x2="128" y2="86" stroke="#2255b8" stroke-width="3" stroke-linecap="round"/>
+        <line x1="80" y1="86" x2="90" y2="86" stroke="#1a7c4f" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- DEMO -->
+<section class="demo">
+  <p class="section-label">Demo</p>
+  <div class="demo-topic">
+    <span></span>
+    Vandaag in het nieuws
+  </div>
+  <h2 class="demo-headline">Kabinet kondigt bezuinigingen aan op zorg en onderwijs</h2>
+
+  <div class="perspectives">
+    <div class="perspective-card red">
+      <span class="source-tag">De Telegraaf</span>
+      <p class="card-head">"Noodzakelijke keuzes voor gezonde overheidsfinanciën"</p>
+      <p class="card-body">Het kabinet ziet geen alternatief voor de ingrepen. Economen steunen de koers. Nederland moet niet langer boven zijn stand leven.</p>
+    </div>
+    <div class="perspective-card blue">
+      <span class="source-tag">De Volkskrant</span>
+      <p class="card-head">"Laagste inkomens dragen onevenredig zwaar deel"</p>
+      <p class="card-body">Onderzoekers waarschuwen dat de bezuinigingen de ongelijkheid vergroten. Kwetsbare groepen worden het hardst getroffen.</p>
+    </div>
+    <div class="perspective-card green">
+      <span class="source-tag">Reuters</span>
+      <p class="card-head">"Dutch government cuts reflect broader European austerity trend"</p>
+      <p class="card-body">The Netherlands joins several EU countries tightening fiscal policy amid rising debt concerns, analysts note mixed economic signals.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <p class="section-label">Hoe het werkt</p>
+  <div class="steps">
+    <div>
+      <div class="step-num">01</div>
+      <p class="step-title">Kies een onderwerp</p>
+      <p class="step-body">Prisma toont de belangrijkste verhalen van vandaag. Kies wat je interesseert.</p>
+    </div>
+    <div>
+      <div class="step-num">02</div>
+      <p class="step-title">Zie de perspectieven</p>
+      <p class="step-body">Drie tot vijf media naast elkaar. Zelfde feiten, andere lens. Geen algoritme dat kiest voor je.</p>
+    </div>
+    <div>
+      <div class="step-num">03</div>
+      <p class="step-title">Begrijp de framing</p>
+      <p class="step-body">Prisma laat zien wat er verschilt — in woordkeuze, toon en wat er juist niet wordt gezegd.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BOTTOM -->
+<section class="cta-bottom" id="waitlist">
+  <h2>Lees het nieuws<br>met open ogen.</h2>
+  <p>Meld je aan en ontvang een bericht als Prisma live gaat.</p>
+
+  <div id="bottom-form-wrap">
+    <a href="/login" class="btn-primary" style="display:inline-block;text-decoration:none;">Begin met lezen →</a>
+  </div>
+</section>
+
+<footer>
+  © 2025 Prisma · Gemaakt met nieuwsgierigheid
+</footer>
+
+<script>
+  const signups = [];
+
+  function handleSignup(source) {
+    const input = document.getElementById(source === 'hero' ? 'hero-email' : 'bottom-email');
+    const email = input.value.trim();
+
+    if (!email || !email.includes('@')) {
+      input.style.borderColor = '#d04a2f';
+      input.focus();
+      setTimeout(() => { input.style.borderColor = ''; }, 1500);
+      return;
+    }
+
+    signups.push({ email, source, ts: new Date().toISOString() });
+
+    const wrap = document.getElementById(source === 'hero' ? 'hero-form-wrap' : 'bottom-form-wrap');
+    const success = document.getElementById(source === 'hero' ? 'hero-success' : 'bottom-success');
+    const formRow = wrap.querySelector('.form-row');
+    const note = wrap.querySelector('.form-note');
+
+    formRow.style.display = 'none';
+    note.style.display = 'none';
+    success.style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
