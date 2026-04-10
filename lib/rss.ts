@@ -26,7 +26,7 @@ const parser = new Parser({
 async function fetchFeed(source: string, url: string): Promise<RssItem[]> {
   try {
     const feed = await parser.parseURL(url);
-    return (feed.items ?? []).slice(0, 15).map((item) => ({
+    return (feed.items ?? []).slice(0, 25).map((item) => ({
       source,
       title: item.title ?? "",
       summary: item.contentSnippet ?? item.content ?? item.summary ?? "",

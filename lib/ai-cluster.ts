@@ -24,7 +24,7 @@ Je bent redacteur van Prisma, een Nederlandse mediageletterdheids-app.
 Je krijgt nieuwsartikelen van 7 kranten: Volkskrant, Telegraaf, NOS, FD, NRC, AD en NYT.
 
 Doe dit:
-1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij EXACT hetzelfde nieuws-event door minstens 3 VERSCHILLENDE kranten is behandeld.
+1. Identificeer de 3 sterkste nieuwsonderwerpen waarbij EXACT hetzelfde nieuws-event door minstens 3 VERSCHILLENDE kranten is behandeld. Als er te weinig recente events zijn waarbij 3 kranten hetzelfde schreven, mag je ook iets oudere events gebruiken uit de feed.
 2. Kies per onderwerp precies 3 artikelen die ALLEMAAL over hetzelfde specifieke event gaan — STRIKT 1 artikel per krant, nooit twee keer dezelfde bron.
 3. Controleer: staan alle 3 artikelen in de "articles" lijst van VERSCHILLENDE kranten? Zo niet, vervang duplicaten.
 4. Kies de 3 bronnen die het meest uiteenlopen in toon, invalshoek of politieke kleur.
@@ -51,7 +51,7 @@ Antwoord UITSLUITEND als geldig JSON in dit formaat, zonder uitleg:
 
 Artikelen (${items.length} stuks):
 ${items
-  .slice(0, 35)
+  .slice(0, 60)
   .map((item, i) => `[${i}] ${item.source}: ${item.title}\n${item.summary.slice(0, 250)}`)
   .join("\n\n")}
 `;
