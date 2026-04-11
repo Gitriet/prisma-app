@@ -14,28 +14,24 @@ export async function GET(req: NextRequest) {
 
   const items = await fetchAllFeeds();
 
-  // Upsert op link — duplicaten worden genegeerd
-  let added = 0;
-  for (const item of items) {
-    if (!item.link) continue;
-    const result = await prisma.rssCache.upsert({
-      where: { link: item.link },
-      update: {}, // al aanwezig → niets wijzigen
-      create: {
-        source: item.source,
-        title: item.title,
-        summary: item.summary,
-        link: item.link,
-        pubDate: item.pubDate,
-      },
-    });
-    if (result) added++;
-  }
+  const validItems = items.filter((i) => i.link);
+
+  // Batch insert — skip duplicaten op link
+  const result = await prisma.rssCache.createMany({
+    data: validItems.map((item) => ({
+      source: item.source,
+      title: item.title,
+      summary: item.summary,
+      link: item.link,
+      pubDate: item.pubDate,
+    })),
+    skipDuplicates: true,
+  });
 
   // Ruim items ouder dan 48 uur op
   await prisma.rssCache.deleteMany({
     where: { fetchedAt: { lt: new Date(Date.now() - 48 * 60 * 60 * 1000) } },
   });
 
-  return NextResponse.json({ ok: true, fetched: items.length, added });
+  return NextResponse.json({ ok: true, fetched: items.length, added: result.count });
 }
